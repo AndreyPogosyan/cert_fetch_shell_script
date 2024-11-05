@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# Check for required arguments
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo "Usage: $0 <common_name> <ttl>"
+  exit 1
+fi
+
+# Assign arguments to variables
+COMMON_NAME="$1"
+TTL="$2"
+
 # Define paths
 NGINX_REPO="https://github.com/AndreyPogosyan/nginx-demo-config.git"
 TMP_DIR="/tmp/nginx"
@@ -32,8 +42,8 @@ else
   exit 1
 fi
 
-# Fetch certificate and key from Vault
-if vault write -format=json pki-int/issue/servers common_name="nginx.acmecompany11.com" ttl="5m" > "$CERT_JSON"; then
+# Fetch certificate and key from Vault using dynamic common_name and ttl
+if vault write -format=json pki-int/issue/servers common_name="$COMMON_NAME" ttl="$TTL" > "$CERT_JSON"; then
   jq -r .data.certificate "$CERT_JSON" > "$CERT_PEM"
   jq -r .data.private_key "$CERT_JSON" > "$KEY_PEM"
   jq -r .data.issuing_ca "$CERT_JSON" >> "$CERT_PEM"
